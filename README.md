@@ -1,4 +1,4 @@
-# Identity & Access Hub
+# user-management-service-app
 
 Cria um **frontend administrativo completo em React + TypeScript** para gerir **Utilizadores, Plataformas e Acessos às Plataformas**.
 
