@@ -26,7 +26,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useAccessList } from "@/hooks/usePlatformAccess";
-import { usePlatformOptions } from "@/hooks/usePlatforms";
+
 
 export const Route = createFileRoute("/platforms/users")({
   head: () => ({
@@ -52,7 +52,7 @@ function PlatformUsersPage() {
   );
 
   const query = useAccessList(filters);
-  const platforms = usePlatformOptions();
+  const platforms = { data: [] as { id: string; code: string; name: string }[] };
 
   return (
     <AppShell>

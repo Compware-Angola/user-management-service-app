@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as IdRouteImport } from './routes/$id'
 import { Route as LogsRouteImport } from './routes/logs'
 import { Route as PlatformsRouteImport } from './routes/platforms'
 import { Route as IdentityAccessRouteImport } from './routes/identity/access'
@@ -18,13 +19,17 @@ import { Route as MigrationHistoryRouteImport } from './routes/migration/history
 import { Route as MigrationImportRouteImport } from './routes/migration/import'
 import { Route as MigrationPendingRouteImport } from './routes/migration/pending'
 import { Route as MigrationSyncRouteImport } from './routes/migration/sync'
-import { Route as PlatformsIdRouteImport } from './routes/platforms/$id'
 import { Route as PlatformsUsersRouteImport } from './routes/platforms/users'
 import { Route as IdentityUsersIdRouteImport } from './routes/identity/users/$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IdRoute = IdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LogsRoute = LogsRouteImport.update({
@@ -67,11 +72,6 @@ const MigrationSyncRoute = MigrationSyncRouteImport.update({
   path: '/migration/sync',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PlatformsIdRoute = PlatformsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => PlatformsRoute,
-} as any)
 const PlatformsUsersRoute = PlatformsUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -85,6 +85,7 @@ const IdentityUsersIdRoute = IdentityUsersIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$id': typeof IdRoute
   '/logs': typeof LogsRoute
   '/platforms': typeof PlatformsRouteWithChildren
   '/identity/access': typeof IdentityAccessRoute
@@ -93,12 +94,12 @@ export interface FileRoutesByFullPath {
   '/migration/import': typeof MigrationImportRoute
   '/migration/pending': typeof MigrationPendingRoute
   '/migration/sync': typeof MigrationSyncRoute
-  '/platforms/$id': typeof PlatformsIdRoute
   '/platforms/users': typeof PlatformsUsersRoute
   '/identity/users/$id': typeof IdentityUsersIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$id': typeof IdRoute
   '/logs': typeof LogsRoute
   '/platforms': typeof PlatformsRouteWithChildren
   '/identity/access': typeof IdentityAccessRoute
@@ -107,13 +108,13 @@ export interface FileRoutesByTo {
   '/migration/import': typeof MigrationImportRoute
   '/migration/pending': typeof MigrationPendingRoute
   '/migration/sync': typeof MigrationSyncRoute
-  '/platforms/$id': typeof PlatformsIdRoute
   '/platforms/users': typeof PlatformsUsersRoute
   '/identity/users/$id': typeof IdentityUsersIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$id': typeof IdRoute
   '/logs': typeof LogsRoute
   '/platforms': typeof PlatformsRouteWithChildren
   '/identity/access': typeof IdentityAccessRoute
@@ -122,7 +123,6 @@ export interface FileRoutesById {
   '/migration/import': typeof MigrationImportRoute
   '/migration/pending': typeof MigrationPendingRoute
   '/migration/sync': typeof MigrationSyncRoute
-  '/platforms/$id': typeof PlatformsIdRoute
   '/platforms/users': typeof PlatformsUsersRoute
   '/identity/users/$id': typeof IdentityUsersIdRoute
 }
@@ -130,6 +130,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/$id'
     | '/logs'
     | '/platforms'
     | '/identity/access'
@@ -138,12 +139,12 @@ export interface FileRouteTypes {
     | '/migration/import'
     | '/migration/pending'
     | '/migration/sync'
-    | '/platforms/$id'
     | '/platforms/users'
     | '/identity/users/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/$id'
     | '/logs'
     | '/platforms'
     | '/identity/access'
@@ -152,12 +153,12 @@ export interface FileRouteTypes {
     | '/migration/import'
     | '/migration/pending'
     | '/migration/sync'
-    | '/platforms/$id'
     | '/platforms/users'
     | '/identity/users/$id'
   id:
     | '__root__'
     | '/'
+    | '/$id'
     | '/logs'
     | '/platforms'
     | '/identity/access'
@@ -166,13 +167,13 @@ export interface FileRouteTypes {
     | '/migration/import'
     | '/migration/pending'
     | '/migration/sync'
-    | '/platforms/$id'
     | '/platforms/users'
     | '/identity/users/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  IdRoute: typeof IdRoute
   LogsRoute: typeof LogsRoute
   PlatformsRoute: typeof PlatformsRouteWithChildren
   IdentityAccessRoute: typeof IdentityAccessRoute
@@ -190,6 +191,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$id': {
+      id: '/$id'
+      path: '/$id'
+      fullPath: '/$id'
+      preLoaderRoute: typeof IdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/logs': {
@@ -248,13 +256,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MigrationSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/platforms/$id': {
-      id: '/platforms/$id'
-      path: '/$id'
-      fullPath: '/platforms/$id'
-      preLoaderRoute: typeof PlatformsIdRouteImport
-      parentRoute: typeof PlatformsRoute
-    }
     '/platforms/users': {
       id: '/platforms/users'
       path: '/users'
@@ -273,12 +274,10 @@ declare module '@tanstack/react-router' {
 }
 
 interface PlatformsRouteChildren {
-  PlatformsIdRoute: typeof PlatformsIdRoute
   PlatformsUsersRoute: typeof PlatformsUsersRoute
 }
 
 const PlatformsRouteChildren: PlatformsRouteChildren = {
-  PlatformsIdRoute: PlatformsIdRoute,
   PlatformsUsersRoute: PlatformsUsersRoute,
 }
 
@@ -300,6 +299,7 @@ const IdentityUsersRouteWithChildren = IdentityUsersRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  IdRoute: IdRoute,
   LogsRoute: LogsRoute,
   PlatformsRoute: PlatformsRouteWithChildren,
   IdentityAccessRoute: IdentityAccessRoute,

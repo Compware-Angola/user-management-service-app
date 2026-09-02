@@ -36,7 +36,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { usePendingUsers, useBulkImport } from "@/hooks/useMigration";
-import { usePlatformOptions } from "@/hooks/usePlatforms";
+
 
 export const Route = createFileRoute("/migration/pending")({
   head: () => ({
@@ -69,7 +69,7 @@ function PendingPage() {
   );
 
   const query = usePendingUsers(filters);
-  const platforms = usePlatformOptions();
+  const platforms = { data: [] as { id: string; code: string; name: string }[] };
   const bulkImport = useBulkImport();
 
   function reset<T>(setter: (value: T) => void) {

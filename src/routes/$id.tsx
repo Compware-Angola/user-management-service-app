@@ -33,7 +33,7 @@ import { useAccessByPlatform, useCreateAccess, useDeleteAccess } from "@/hooks/u
 import { useUsers } from "@/hooks/useUsers";
 import { formatDate, formatNumber } from "@/lib/format";
 
-export const Route = createFileRoute("/platforms/$id")({
+export const Route = createFileRoute("/$id")({
   head: () => ({
     meta: [{ title: "Detalhe da Plataforma — Identity Access Admin" }],
   }),

@@ -1,40 +1,33 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  createPlatform,
-  getPlatform,
-  listAllPlatforms,
-  listPlatforms,
-  type PlatformFilters,
-  type PlatformInput,
+  CreatePlatformPayload,
+  CreatePlatformResponse,
+  createPlatformService,
+  GetPlatformsResponse,
+  getPlatformsService,
 } from "@/services/platforms.service";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-export const platformKeys = {
-  all: ["platforms"] as const,
-  list: (filters: PlatformFilters) => ["platforms", "list", filters] as const,
-  options: ["platforms", "options"] as const,
-  detail: (id: string) => ["platforms", "detail", id] as const,
-};
-
-export function usePlatforms(filters: PlatformFilters) {
-  return useQuery({
-    queryKey: platformKeys.list(filters),
-    queryFn: () => listPlatforms(filters),
-    placeholderData: (previous) => previous,
+export function useQueryPlatforms() {
+  return useQuery<GetPlatformsResponse, Error>({
+    queryKey: ["platforms"],
+    queryFn: getPlatformsService,
+    staleTime: 5 * 60 * 1000,
   });
 }
+//==================================================================================
+//                                MUTATE
+//==================================================================================
 
-export function usePlatformOptions() {
-  return useQuery({ queryKey: platformKeys.options, queryFn: listAllPlatforms });
-}
-
-export function usePlatform(id: string) {
-  return useQuery({ queryKey: platformKeys.detail(id), queryFn: () => getPlatform(id) });
-}
-
-export function useCreatePlatform() {
+export const useMutationCreatePlatform = () => {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input: PlatformInput) => createPlatform(input),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: platformKeys.all }),
+
+  return useMutation<CreatePlatformResponse, Error, CreatePlatformPayload>({
+    mutationFn: createPlatformService,
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["platforms"],
+      });
+    },
   });
-}
+};

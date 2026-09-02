@@ -26,7 +26,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useAccessList } from "@/hooks/usePlatformAccess";
-import { usePlatformOptions } from "@/hooks/usePlatforms";
+
 import { formatDate } from "@/lib/format";
 import type { AccessStatus, Origin } from "@/lib/types";
 
@@ -56,7 +56,7 @@ function AccessPage() {
   );
 
   const query = useAccessList(filters);
-  const platforms = usePlatformOptions();
+  const platforms = { data: [] as { id: string; code: string; name: string }[] };
 
   function reset<T>(setter: (value: T) => void) {
     return (value: T) => {

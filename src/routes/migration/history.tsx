@@ -26,7 +26,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useMigrationHistory } from "@/hooks/useMigration";
-import { usePlatformOptions } from "@/hooks/usePlatforms";
+
 import { formatDateTime } from "@/lib/format";
 import type { MigrationResult } from "@/lib/types";
 
@@ -56,7 +56,7 @@ function HistoryPage() {
   );
 
   const query = useMigrationHistory(filters);
-  const platforms = usePlatformOptions();
+  const platforms = { data: [] as { id: string; code: string; name: string }[] };
 
   function reset<T>(setter: (value: T) => void) {
     return (value: T) => {

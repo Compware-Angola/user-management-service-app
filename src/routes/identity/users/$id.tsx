@@ -18,7 +18,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { useUser } from "@/hooks/useUsers";
 import { useAccessByUser, useCreateAccess, useDeleteAccess } from "@/hooks/usePlatformAccess";
-import { usePlatformOptions } from "@/hooks/usePlatforms";
+
 import { formatDate } from "@/lib/format";
 
 export const Route = createFileRoute("/identity/users/$id")({
@@ -32,7 +32,7 @@ function UserDetailPage() {
   const { id } = useParams({ from: "/identity/users/$id" });
   const user = useUser(id);
   const access = useAccessByUser(id);
-  const platforms = usePlatformOptions();
+  const platforms = { data: [] as { id: string; code: string; name: string }[] };
   const createAccess = useCreateAccess();
   const deleteAccess = useDeleteAccess();
 

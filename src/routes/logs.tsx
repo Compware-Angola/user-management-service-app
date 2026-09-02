@@ -34,7 +34,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useLogs, useLogStats } from "@/hooks/useLogs";
-import { usePlatformOptions } from "@/hooks/usePlatforms";
+//import { usePlatformOptions } from "@/hooks/usePlatforms";
 import { logActions, logsToCsv } from "@/services/logs.service";
 import { formatDateTime, formatNumber } from "@/lib/format";
 import type { LogEntry, LogLevel } from "@/lib/types";
@@ -76,7 +76,7 @@ function LogsPage() {
 
   const query = useLogs(filters);
   const stats = useLogStats({ search, platformId, level, action, from, to });
-  const platforms = usePlatformOptions();
+  //const platforms = usePlatformOptions();
   const actions = useMemo(() => logActions(), []);
 
   function reset<T>(setter: (value: T) => void) {
@@ -146,11 +146,11 @@ function LogsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">Todas as plataformas</SelectItem>
-              {platforms.data?.map((p) => (
+              {/* {platforms.data?.map((p) => (
                 <SelectItem key={p.id} value={p.id}>
                   {p.code} — {p.name}
                 </SelectItem>
-              ))}
+              ))} */}
             </SelectContent>
           </Select>
           <Select

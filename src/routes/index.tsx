@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getDashboardStats } from "@/services/dashboard.service";
-import { usePlatforms } from "@/hooks/usePlatforms";
 import { useLogs, useLogStats } from "@/hooks/useLogs";
 import { formatDateTime, formatNumber } from "@/lib/format";
 
@@ -35,7 +34,7 @@ export const Route = createFileRoute("/")({
 
 function DashboardPage() {
   const stats = useQuery({ queryKey: ["dashboard", "stats"], queryFn: getDashboardStats });
-  const platforms = usePlatforms({ page: 1, pageSize: 6 });
+  //const platforms = usePlatforms({ page: 1, pageSize: 6 });
   const logStats = useLogStats({});
   const recentLogs = useLogs({ page: 1, pageSize: 6 });
 
@@ -81,7 +80,7 @@ function DashboardPage() {
               <Link to="/platforms">Ver todas</Link>
             </Button>
           </div>
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             {platforms.isLoading
               ? Array.from({ length: 5 }).map((_, i) => (
                   <Skeleton key={i} className="h-12 w-full" />
@@ -108,7 +107,7 @@ function DashboardPage() {
                     </div>
                   </Link>
                 ))}
-          </div>
+          </div> */}
         </Card>
 
         <Card className="p-5 shadow-none">
