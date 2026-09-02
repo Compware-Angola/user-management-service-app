@@ -113,52 +113,8 @@ function DashboardPage() {
         <Card className="p-5 shadow-none">
           <div className="mb-4 flex items-center gap-2">
             <ScrollText className="size-4 text-muted-foreground" />
-            <h2 className="text-sm font-semibold text-foreground">Saúde dos logs (21 dias)</h2>
+            <h2 className="text-sm font-semibold text-foreground">Add</h2>
           </div>
-          {logStats.data ? (
-            <div className="space-y-3">
-              <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="rounded-md border border-border p-2">
-                  <p className="font-mono text-lg font-semibold">
-                    {formatNumber(logStats.data.total)}
-                  </p>
-                  <p className="text-[0.68rem] uppercase text-muted-foreground">Eventos</p>
-                </div>
-                <div className="rounded-md border border-warning/30 bg-warning/10 p-2">
-                  <p className="font-mono text-lg font-semibold">{logStats.data.warnings}</p>
-                  <p className="text-[0.68rem] uppercase text-muted-foreground">Avisos</p>
-                </div>
-                <div className="rounded-md border border-destructive/25 bg-destructive/10 p-2">
-                  <p className="font-mono text-lg font-semibold text-destructive">
-                    {logStats.data.errors}
-                  </p>
-                  <p className="text-[0.68rem] uppercase text-muted-foreground">Erros</p>
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                {logStats.data.byPlatform.slice(0, 5).map((row) => (
-                  <div key={row.platformCode} className="flex items-center gap-2">
-                    <PlatformTag code={row.platformCode} />
-                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="h-full rounded-full bg-primary"
-                        style={{
-                          width: `${Math.round(
-                            (row.total / (logStats.data.byPlatform[0]?.total || 1)) * 100,
-                          )}%`,
-                        }}
-                      />
-                    </div>
-                    <span className="w-8 text-right font-mono text-xs text-muted-foreground">
-                      {row.total}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <Skeleton className="h-40 w-full" />
-          )}
         </Card>
       </div>
 

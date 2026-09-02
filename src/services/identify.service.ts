@@ -1,5 +1,26 @@
 import { axiosNestAuth } from "@/lib/axios-nest-auth";
 
+export interface Platform {
+  id: number;
+  code: string;
+  name: string;
+  description: string;
+  status: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserPlatform {
+  id: number;
+  userId: number;
+  platformId: number;
+  platformUserKey: string;
+  status: number;
+  createdAt: string;
+  updatedAt: string;
+  platform: Platform;
+}
+
 export interface Identity {
   id: number;
   username: string;
@@ -19,9 +40,20 @@ export interface Identity {
   passwordChangedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  userPlatforms: UserPlatform[];
 }
 
-export type GetIdentityResponse = Identity[];
+export interface IdentityMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface GetIdentityResponse {
+  data: Identity[];
+  meta: IdentityMeta;
+}
 
 export const getIdentityService = async (): Promise<GetIdentityResponse> => {
   const { data } = await axiosNestAuth.get<GetIdentityResponse>("/identity");
@@ -46,7 +78,7 @@ export const activateIdentityService = async ({
   id,
   status,
 }: ActivateIdentityParams): Promise<ActivateIdentityResponse> => {
-  const route = status ? `/api/identity/${id}/activate` : `/identity/${id}/activate`;
+  const route = status ? `/identity/${id}/activate` : `/identity/${id}/deactivate`;
 
   const { data } = await axiosNestAuth.patch<ActivateIdentityResponse>(route);
 
@@ -56,7 +88,6 @@ export const activateIdentityService = async ({
 //=================================================================================
 //                                    Identify Id
 //=================================================================================
-import { axiosNestGa } from "@/lib/axios-nest-ga";
 
 export interface IdentityUserPlatform {
   id: number;
@@ -104,7 +135,7 @@ export interface IdentityUser {
 export type GetIdentityUserResponse = IdentityUser;
 
 export const getIdentityUserService = async (id: number): Promise<GetIdentityUserResponse> => {
-  const { data } = await axiosNestGa.get<GetIdentityUserResponse>(`/identity/${id}`);
+  const { data } = await axiosNestAuth.get<GetIdentityUserResponse>(`/identity/${id}`);
 
   return data;
 };

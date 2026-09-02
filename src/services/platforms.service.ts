@@ -8,12 +8,34 @@ export interface Platform {
   status: number;
   createdAt: string;
   updatedAt: string;
+  usersCount: number;
 }
 
-export type GetPlatformsResponse = Platform[];
+export interface PlatformMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
 
-export const getPlatformsService = async (): Promise<GetPlatformsResponse> => {
-  const { data } = await axiosNestAuth.get<GetPlatformsResponse>("/platforms");
+export interface GetPlatformsResponse {
+  data: Platform[];
+  meta: PlatformMeta;
+}
+
+export interface GetPlatformsParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: number;
+}
+
+export const getPlatformsService = async (
+  params?: GetPlatformsParams,
+): Promise<GetPlatformsResponse> => {
+  const { data } = await axiosNestAuth.get<GetPlatformsResponse>("/platforms", {
+    params,
+  });
 
   return data;
 };

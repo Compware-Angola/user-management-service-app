@@ -2,15 +2,16 @@ import {
   CreatePlatformPayload,
   CreatePlatformResponse,
   createPlatformService,
+  GetPlatformsParams,
   GetPlatformsResponse,
   getPlatformsService,
 } from "@/services/platforms.service";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-export function useQueryPlatforms() {
+export function useQueryPlatforms(params: GetPlatformsParams = {}) {
   return useQuery<GetPlatformsResponse, Error>({
-    queryKey: ["platforms"],
-    queryFn: getPlatformsService,
+    queryKey: ["platforms", params],
+    queryFn: () => getPlatformsService(params),
     staleTime: 5 * 60 * 1000,
   });
 }

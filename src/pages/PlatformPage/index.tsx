@@ -2,11 +2,13 @@ import { useState } from "react";
 import { AlertTriangle, Boxes, Eye, Plus, Search } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/common/PageHeader";
+import { DataPagination } from "@/components/common/DataPagination";
 import { EmptyState } from "@/components/common/EmptyState";
 import { TableSkeleton } from "@/components/common/TableSkeleton";
 import { PlatformTag, StatusBadge } from "@/components/common/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 import {
   Table,
@@ -20,11 +22,16 @@ import { useQueryPlatforms } from "@/hooks/usePlatforms";
 import { formatDate } from "@/lib/format";
 import { AddPlatformModal } from "./components/AddPlatformModal";
 
+const PAGE_SIZE = 10;
+
 function PlatformsPage() {
   const [open, setOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
 
-  const query = useQueryPlatforms();
-  const data = query.data ?? [];
+  const query = useQueryPlatforms({ page, limit: PAGE_SIZE, search: search || undefined });
+  const platforms = query.data?.data ?? [];
+  const total = query.data?.meta?.total ?? 0;
 
   return (
     <AppShell>
@@ -40,6 +47,21 @@ function PlatformsPage() {
       />
 
       <Card className="shadow-none">
+        <div className="border-b border-border p-4">
+          <div className="relative max-w-sm">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Pesquisar por nome ou código..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className="pl-8"
+            />
+          </div>
+        </div>
+
         <Table>
           <TableHeader>
             <TableRow>
@@ -65,7 +87,7 @@ function PlatformsPage() {
                   />
                 </TableCell>
               </TableRow>
-            ) : data.length === 0 ? (
+            ) : platforms.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6}>
                   <EmptyState
@@ -82,7 +104,7 @@ function PlatformsPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              data.map((p) => (
+              platforms.map((p) => (
                 <TableRow key={p.id}>
                   <TableCell>{p.id}</TableCell>
                   <TableCell>
@@ -103,6 +125,8 @@ function PlatformsPage() {
             )}
           </TableBody>
         </Table>
+
+        <DataPagination page={page} pageSize={PAGE_SIZE} total={total} onPageChange={setPage} />
       </Card>
       <AddPlatformModal onOpenChange={setOpen} open={open} />
     </AppShell>

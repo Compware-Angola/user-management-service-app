@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as IdRouteImport } from './routes/$id'
 import { Route as LogsRouteImport } from './routes/logs'
+import { Route as PlatformAccessRouteImport } from './routes/platform-access'
 import { Route as PlatformsRouteImport } from './routes/platforms'
 import { Route as IdentityAccessRouteImport } from './routes/identity/access'
 import { Route as IdentityUsersRouteImport } from './routes/identity/users'
@@ -35,6 +36,11 @@ const IdRoute = IdRouteImport.update({
 const LogsRoute = LogsRouteImport.update({
   id: '/logs',
   path: '/logs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlatformAccessRoute = PlatformAccessRouteImport.update({
+  id: '/platform-access',
+  path: '/platform-access',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlatformsRoute = PlatformsRouteImport.update({
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$id': typeof IdRoute
   '/logs': typeof LogsRoute
+  '/platform-access': typeof PlatformAccessRoute
   '/platforms': typeof PlatformsRouteWithChildren
   '/identity/access': typeof IdentityAccessRoute
   '/identity/users': typeof IdentityUsersRouteWithChildren
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$id': typeof IdRoute
   '/logs': typeof LogsRoute
+  '/platform-access': typeof PlatformAccessRoute
   '/platforms': typeof PlatformsRouteWithChildren
   '/identity/access': typeof IdentityAccessRoute
   '/identity/users': typeof IdentityUsersRouteWithChildren
@@ -116,6 +124,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/$id': typeof IdRoute
   '/logs': typeof LogsRoute
+  '/platform-access': typeof PlatformAccessRoute
   '/platforms': typeof PlatformsRouteWithChildren
   '/identity/access': typeof IdentityAccessRoute
   '/identity/users': typeof IdentityUsersRouteWithChildren
@@ -132,6 +141,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$id'
     | '/logs'
+    | '/platform-access'
     | '/platforms'
     | '/identity/access'
     | '/identity/users'
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$id'
     | '/logs'
+    | '/platform-access'
     | '/platforms'
     | '/identity/access'
     | '/identity/users'
@@ -160,6 +171,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$id'
     | '/logs'
+    | '/platform-access'
     | '/platforms'
     | '/identity/access'
     | '/identity/users'
@@ -175,6 +187,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   IdRoute: typeof IdRoute
   LogsRoute: typeof LogsRoute
+  PlatformAccessRoute: typeof PlatformAccessRoute
   PlatformsRoute: typeof PlatformsRouteWithChildren
   IdentityAccessRoute: typeof IdentityAccessRoute
   IdentityUsersRoute: typeof IdentityUsersRouteWithChildren
@@ -205,6 +218,13 @@ declare module '@tanstack/react-router' {
       path: '/logs'
       fullPath: '/logs'
       preLoaderRoute: typeof LogsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/platform-access': {
+      id: '/platform-access'
+      path: '/platform-access'
+      fullPath: '/platform-access'
+      preLoaderRoute: typeof PlatformAccessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/platforms': {
@@ -301,6 +321,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   IdRoute: IdRoute,
   LogsRoute: LogsRoute,
+  PlatformAccessRoute: PlatformAccessRoute,
   PlatformsRoute: PlatformsRouteWithChildren,
   IdentityAccessRoute: IdentityAccessRoute,
   IdentityUsersRoute: IdentityUsersRouteWithChildren,

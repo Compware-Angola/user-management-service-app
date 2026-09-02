@@ -4,14 +4,10 @@ import {
   Bell,
   Boxes,
   ChevronRight,
-  History,
   LayoutDashboard,
-  RefreshCcw,
   Search,
-  Shield,
   Upload,
   Users,
-  UsersRound,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
@@ -57,16 +53,12 @@ const NAV: Array<{ group: string; items: NavItem[] }> = [
     group: "Plataformas",
     items: [
       { label: "Todas as Plataformas", to: "/platforms", icon: Boxes },
-      { label: "Utilizadores por Plataforma", to: "/platforms/users", icon: UsersRound },
     ],
   },
   {
     group: "Migração",
     items: [
-      { label: "Utilizadores Pendentes", to: "/migration/pending", icon: Shield },
       { label: "Importar Utilizadores", to: "/migration/import", icon: Upload },
-      { label: "Sincronização", to: "/migration/sync", icon: RefreshCcw },
-      { label: "Histórico de Migrações", to: "/migration/history", icon: History },
     ],
   },
 ];

@@ -2,12 +2,13 @@ import { useState } from "react";
 import { AlertTriangle, Plus, Search, Users } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/common/PageHeader";
+import { DataPagination } from "@/components/common/DataPagination";
 import { EmptyState } from "@/components/common/EmptyState";
 import { TableSkeleton } from "@/components/common/TableSkeleton";
-import { StatusBadge as UserStatusBadge } from "@/components/common/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -25,18 +26,29 @@ import {
 } from "@/components/ui/table";
 
 import { formatDate } from "@/lib/format";
-import { useQueryIdentity } from "@/hooks/identify/useIdentify";
+import {
+  useQueryIdentity,
+  useMutationActivateIdentity,
+} from "@/hooks/identify/useIdentify";
+import { normalizeQueryResponse } from "@/utils/normalize-query-response";
+import { UserDetailModal } from "./components/UserDetailModal";
+
+const PAGE_SIZE = 10;
 
 function UsersPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("ALL");
   const [origin, setOrigin] = useState("ALL");
   const [platformId, setPlatformId] = useState("ALL");
+  const [page, setPage] = useState(1);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
   const query = useQueryIdentity();
+  const { mutate: toggleStatus, isPending: isToggling } = useMutationActivateIdentity();
   const platforms = { data: [] as { id: string; code: string; name: string }[] };
 
-  const users = query.data ?? [];
+  const { data: users, total } = normalizeQueryResponse(query.data);
 
   return (
     <AppShell>
@@ -106,17 +118,17 @@ function UsersPage() {
               <TableHead>Nome</TableHead>
               <TableHead className="hidden md:table-cell">Username</TableHead>
               <TableHead className="hidden lg:table-cell">Email</TableHead>
-              <TableHead className="w-[100px]">Status</TableHead>
+              <TableHead className="w-[80px] text-center">Ativo</TableHead>
               <TableHead className="hidden md:table-cell">Telefone</TableHead>
               <TableHead className="hidden xl:table-cell w-[140px]">Último acesso</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {query.isLoading ? (
-              <TableSkeleton rows={8} columns={8} />
+              <TableSkeleton rows={8} columns={7} />
             ) : query.isError ? (
               <TableRow>
-                <TableCell colSpan={8}>
+                <TableCell colSpan={7}>
                   <EmptyState
                     icon={AlertTriangle}
                     title="Não foi possível carregar os utilizadores"
@@ -127,7 +139,7 @@ function UsersPage() {
               </TableRow>
             ) : users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8}>
+                <TableCell colSpan={7}>
                   <EmptyState
                     icon={Users}
                     title="Nenhum utilizador encontrado"
@@ -143,7 +155,14 @@ function UsersPage() {
               </TableRow>
             ) : (
               users.map((user) => (
-                <TableRow key={user.id}>
+                <TableRow
+                  key={user.id}
+                  className="cursor-pointer"
+                  onClick={() => {
+                    setSelectedUserId(user.id);
+                    setModalOpen(true);
+                  }}
+                >
                   <TableCell className="font-mono text-xs text-muted-foreground">
                     {user.id}
                   </TableCell>
@@ -154,8 +173,15 @@ function UsersPage() {
                   <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">
                     {user.email}
                   </TableCell>
-                  <TableCell>
-                    <UserStatusBadge status={user.status === 1 ? "ACTIVE" : "INACTIVE"} />
+                  <TableCell className="text-center">
+                    <Switch
+                      checked={user.status === 1}
+                      disabled={isToggling}
+                      onCheckedChange={(checked) => {
+                        toggleStatus({ id: user.id, status: checked });
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    />
                   </TableCell>
                   <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
                     {user.phone}
@@ -168,7 +194,11 @@ function UsersPage() {
             )}
           </TableBody>
         </Table>
+
+        <DataPagination page={page} pageSize={PAGE_SIZE} total={total} onPageChange={setPage} />
       </Card>
+
+      <UserDetailModal open={modalOpen} onOpenChange={setModalOpen} userId={selectedUserId} />
     </AppShell>
   );
 }
