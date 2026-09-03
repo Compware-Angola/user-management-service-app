@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Loader2, Link as LinkIcon, User, Mail, Phone, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useQueryIdentityUser } from "@/hooks/identify/useIdentify";
+import { useQueryIdentityUser, useQueryIdentity } from "@/hooks/identify/useIdentify";
 import { useQueryPlatforms } from "@/hooks/usePlatforms";
 import { useCreatePlatformAccess } from "@/hooks/useCreatePlatformAccess";
 import { StatusBadge } from "@/components/common/StatusBadge";
@@ -34,14 +33,29 @@ const UserDetailModal = ({ open, onOpenChange, userId }: UserDetailModalProps) =
   const { mutate: createAccess, isPending, error: accessError } = useCreatePlatformAccess();
 
   const [platformCode, setPlatformCode] = useState("");
-  const [platformUserKey, setPlatformUserKey] = useState("");
+  const [selectedIdentityId, setSelectedIdentityId] = useState<string>("");
+
+  const shouldQueryIdentities = !!platformCode && !!user?.bi;
+  const { data: identitySearchResult, isLoading: isSearchingIdentities } = useQueryIdentity(
+    { search: user?.bi, platformCode: shouldQueryIdentities ? platformCode : undefined },
+    { enabled: shouldQueryIdentities },
+  );
+
+  const identityResults = identitySearchResult?.data ?? [];
+  const selectedIdentity = identityResults.find(
+    (i: { id: number }) => String(i.id) === selectedIdentityId,
+  );
+  const platformUserKey =
+    selectedIdentity?.userPlatforms?.find(
+      (up: { platform: { code: string } }) => up.platform.code === platformCode,
+    )?.platformUserKey ?? "";
 
   function handleClose(next: boolean) {
     if (!isPending) {
       onOpenChange(next);
       if (!next) {
         setPlatformCode("");
-        setPlatformUserKey("");
+        setSelectedIdentityId("");
       }
     }
   }
@@ -53,7 +67,7 @@ const UserDetailModal = ({ open, onOpenChange, userId }: UserDetailModalProps) =
       {
         onSuccess: () => {
           setPlatformCode("");
-          setPlatformUserKey("");
+          setSelectedIdentityId("");
         },
       },
     );
@@ -150,7 +164,14 @@ const UserDetailModal = ({ open, onOpenChange, userId }: UserDetailModalProps) =
             <div className="border-t border-border pt-4">
               <h4 className="text-sm font-semibold mb-3">Vincular a nova plataforma</h4>
               <div className="flex flex-col gap-3 sm:flex-row">
-                <Select value={platformCode} onValueChange={setPlatformCode} disabled={isPending}>
+                <Select
+                  value={platformCode}
+                  onValueChange={(v) => {
+                    setPlatformCode(v);
+                    setSelectedIdentityId("");
+                  }}
+                  disabled={isPending}
+                >
                   <SelectTrigger className="flex-1">
                     <SelectValue placeholder="Selecionar plataforma" />
                   </SelectTrigger>
@@ -162,13 +183,30 @@ const UserDetailModal = ({ open, onOpenChange, userId }: UserDetailModalProps) =
                     ))}
                   </SelectContent>
                 </Select>
-                <Input
-                  placeholder="Platform User Key"
-                  value={platformUserKey}
-                  onChange={(e) => setPlatformUserKey(e.target.value)}
-                  disabled={isPending}
-                  className="flex-1"
-                />
+                <Select
+                  value={selectedIdentityId}
+                  onValueChange={setSelectedIdentityId}
+                  disabled={isPending || !platformCode || isSearchingIdentities}
+                >
+                  <SelectTrigger className="flex-1">
+                    <SelectValue
+                      placeholder={
+                        !platformCode
+                          ? "Selecionar plataforma primeiro"
+                          : isSearchingIdentities
+                            ? "Pesquisando..."
+                            : "Selecionar utilizador"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {identityResults.map((identity: { id: number; name: string; username: string }) => (
+                      <SelectItem key={identity.id} value={String(identity.id)}>
+                        {identity.name} — {identity.username}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <Button
                   onClick={handleLink}
                   disabled={!platformCode || !platformUserKey || isPending}

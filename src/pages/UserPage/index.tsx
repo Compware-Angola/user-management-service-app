@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { AlertTriangle, Plus, Search, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import { AlertTriangle, Eye, Plus, Search, Users } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/common/PageHeader";
 import { DataPagination } from "@/components/common/DataPagination";
@@ -26,27 +26,51 @@ import {
 } from "@/components/ui/table";
 
 import { formatDate } from "@/lib/format";
-import {
-  useQueryIdentity,
-  useMutationActivateIdentity,
-} from "@/hooks/identify/useIdentify";
+import { useQueryIdentity, useMutationActivateIdentity } from "@/hooks/identify/useIdentify";
+import { useQueryPlatforms } from "@/hooks/usePlatforms";
 import { normalizeQueryResponse } from "@/utils/normalize-query-response";
 import { UserDetailModal } from "./components/UserDetailModal";
+import { CreateUserModal } from "./components/CreateUserModal";
 
 const PAGE_SIZE = 10;
 
 function UsersPage() {
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [status, setStatus] = useState("ALL");
   const [origin, setOrigin] = useState("ALL");
   const [platformId, setPlatformId] = useState("ALL");
   const [page, setPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
-  const query = useQueryIdentity();
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  const statusMap: Record<string, number | undefined> = {
+    ALL: undefined,
+    ACTIVE: 1,
+    INACTIVE: 0,
+    PENDING: 2,
+  };
+
+  const query = useQueryIdentity({
+    page,
+    limit: PAGE_SIZE,
+    search: debouncedSearch || undefined,
+    status: statusMap[status],
+    platformCode: platformId === "ALL" ? undefined : platformId,
+  });
   const { mutate: toggleStatus, isPending: isToggling } = useMutationActivateIdentity();
-  const platforms = { data: [] as { id: string; code: string; name: string }[] };
+  const { data: platformsResponse } = useQueryPlatforms({ limit: 100 });
+  const platforms = platformsResponse?.data ?? [];
 
   const { data: users, total } = normalizeQueryResponse(query.data);
 
@@ -56,7 +80,7 @@ function UsersPage() {
         title="Utilizadores"
         description="Gestão de todos os utilizadores registados na identidade central."
         actions={
-          <Button>
+          <Button onClick={() => setCreateOpen(true)}>
             <Plus className="size-4" />
             Novo Utilizador
           </Button>
@@ -82,28 +106,17 @@ function UsersPage() {
               <SelectItem value="ALL">Todos os status</SelectItem>
               <SelectItem value="ACTIVE">Ativo</SelectItem>
               <SelectItem value="INACTIVE">Inativo</SelectItem>
-              <SelectItem value="PENDING">Pendente</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={origin} onValueChange={setOrigin}>
-            <SelectTrigger>
-              <SelectValue placeholder="Origem" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Todas as origens</SelectItem>
-              <SelectItem value="CENTRAL">Central</SelectItem>
-              <SelectItem value="LEGACY">Legacy</SelectItem>
-              <SelectItem value="IMPORTED">Importado</SelectItem>
-            </SelectContent>
-          </Select>
+
           <Select value={platformId} onValueChange={setPlatformId}>
             <SelectTrigger>
               <SelectValue placeholder="Plataforma" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">Todas as plataformas</SelectItem>
-              {platforms.data?.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
+              {platforms.map((p) => (
+                <SelectItem key={p.id} value={p.code}>
                   {p.code} — {p.name}
                 </SelectItem>
               ))}
@@ -121,14 +134,15 @@ function UsersPage() {
               <TableHead className="w-[80px] text-center">Ativo</TableHead>
               <TableHead className="hidden md:table-cell">Telefone</TableHead>
               <TableHead className="hidden xl:table-cell w-[140px]">Último acesso</TableHead>
+              <TableHead className="w-[60px] text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {query.isLoading ? (
-              <TableSkeleton rows={8} columns={7} />
+              <TableSkeleton rows={8} columns={8} />
             ) : query.isError ? (
               <TableRow>
-                <TableCell colSpan={7}>
+                <TableCell colSpan={8}>
                   <EmptyState
                     icon={AlertTriangle}
                     title="Não foi possível carregar os utilizadores"
@@ -139,13 +153,13 @@ function UsersPage() {
               </TableRow>
             ) : users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7}>
+                <TableCell colSpan={8}>
                   <EmptyState
                     icon={Users}
                     title="Nenhum utilizador encontrado"
                     description="Ainda não existem utilizadores registados."
                     action={
-                      <Button>
+                      <Button onClick={() => setCreateOpen(true)}>
                         <Plus className="size-4" />
                         Novo Utilizador
                       </Button>
@@ -155,14 +169,7 @@ function UsersPage() {
               </TableRow>
             ) : (
               users.map((user) => (
-                <TableRow
-                  key={user.id}
-                  className="cursor-pointer"
-                  onClick={() => {
-                    setSelectedUserId(user.id);
-                    setModalOpen(true);
-                  }}
-                >
+                <TableRow key={user.id}>
                   <TableCell className="font-mono text-xs text-muted-foreground">
                     {user.id}
                   </TableCell>
@@ -180,7 +187,6 @@ function UsersPage() {
                       onCheckedChange={(checked) => {
                         toggleStatus({ id: user.id, status: checked });
                       }}
-                      onClick={(e) => e.stopPropagation()}
                     />
                   </TableCell>
                   <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
@@ -188,6 +194,19 @@ function UsersPage() {
                   </TableCell>
                   <TableCell className="hidden xl:table-cell text-xs text-muted-foreground">
                     {user.lastLoginAt ? formatDate(user.lastLoginAt) : "—"}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title="Ver detalhes"
+                      onClick={() => {
+                        setSelectedUserId(user.id);
+                        setModalOpen(true);
+                      }}
+                    >
+                      <Eye className="size-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
@@ -199,6 +218,7 @@ function UsersPage() {
       </Card>
 
       <UserDetailModal open={modalOpen} onOpenChange={setModalOpen} userId={selectedUserId} />
+      <CreateUserModal open={createOpen} onOpenChange={setCreateOpen} />
     </AppShell>
   );
 }
